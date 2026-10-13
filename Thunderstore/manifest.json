@@ -1,0 +1,11 @@
+
+{
+  "name": "FlametalPickaxe",
+  "version_number": "1.0.0",
+  "website_url": "",
+  "description": "Adds a craftable Flametal Pickaxe capable of mining Petrified Gammeltrolls and other high-tier mineral deposits.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2333",
+    "ValheimModding-Jotunn-2.30.2"
+  ]
+}
