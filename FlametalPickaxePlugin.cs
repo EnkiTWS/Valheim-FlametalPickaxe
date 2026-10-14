@@ -66,23 +66,81 @@ namespace FlametalPickaxe
                 config.AddRequirement("Blackwood", 10);
 
                 // Clone the vanilla Black Metal Pickaxe.
+
+                // Get the original Black Metal Pickaxe.
+                var vanillaPrefab =
+                    PrefabManager.Instance.GetPrefab("PickaxeBlackMetal");
+
+                if (vanillaPrefab == null)
+                {
+                    Logger.LogError(
+                        "Vanilla Black Metal Pickaxe prefab not found."
+                    );
+                    return;
+                }
+
+                // Clone the vanilla Black Metal Pickaxe.
                 var pickaxe = new CustomItem(
                     ItemPrefabName,
                     "PickaxeBlackMetal",
                     config
                 );
 
-                if (pickaxe.ItemDrop == null)
+                var vanillaDrop =
+                    vanillaPrefab.GetComponent<ItemDrop>();
+
+                // Verify both items have valid data.
+                if (vanillaDrop == null ||
+                    pickaxe.ItemDrop == null ||
+                    vanillaDrop.m_itemData?.m_shared == null ||
+                    pickaxe.ItemDrop.m_itemData?.m_shared == null)
                 {
-                    Logger.LogError("Cloned pickaxe has no ItemDrop!");
+                    Logger.LogError(
+                        "Pickaxe validation failed: missing item data."
+                    );
                     return;
                 }
 
-                // Enable tier-6 mining.
-                pickaxe.ItemDrop.m_itemData.m_shared.m_toolTier = 6;
+                var vanillaData = vanillaDrop.m_itemData.m_shared;
+                var customData = pickaxe.ItemDrop.m_itemData.m_shared;
 
-                // Disable upgrades.
-                pickaxe.ItemDrop.m_itemData.m_shared.m_maxQuality = 1;
+                // Prevent modifying the original item's SharedData.
+                if (System.Object.ReferenceEquals(vanillaData, customData))
+                {
+                    Logger.LogError(
+                        "Unsafe shared item data detected. " +
+                        "Flametal Pickaxe registration aborted."
+                    );
+                    return;
+                }
+
+                // Record the original properties.
+                int originalToolTier = vanillaData.m_toolTier;
+                int originalMaxQuality = vanillaData.m_maxQuality;
+
+                // Modify ONLY our custom pickaxe.
+                customData.m_toolTier = 6;
+                customData.m_maxQuality = 1;
+
+                // Make sure the original pickaxe is unchanged.
+                if (vanillaData.m_toolTier != originalToolTier ||
+                    vanillaData.m_maxQuality != originalMaxQuality)
+                {
+                    Logger.LogError(
+                        "Vanilla pickaxe data changed unexpectedly!"
+                    );
+                    return;
+                }
+
+                Logger.LogInfo(
+                    "Vanilla Black Metal tool tier: " +
+                    vanillaData.m_toolTier
+                );
+
+                Logger.LogInfo(
+                    "Flametal Pickaxe tool tier: " +
+                    customData.m_toolTier
+                );
 
                 // Assign the custom inventory icon.
                 if (icon != null)
